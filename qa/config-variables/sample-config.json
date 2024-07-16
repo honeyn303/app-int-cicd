@@ -1,0 +1,6 @@
+{
+	"`CONFIG_CONN_NAME`": "projects/honeyautomation/locations/us-central1/connections/pub-sub-connector",
+	"`CONFIG_ENV`": "qa",
+	"`CONFIG_TOPIC`": "projects/honeyautomation/topics/ipaas-test",
+	"`CONFIG_URL`": "https://mocktarget.apigee.net/echo"
+}
