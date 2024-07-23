@@ -41,7 +41,7 @@ steps:
         #1. Install the Integration CLI
         curl -L https://raw.githubusercontent.com/GoogleCloudPlatform/application-integration-management-toolkit/main/downloadLatest.sh | sh
         export PATH=$$PATH:$$HOME/.integrationcli/bin
-        integrationcli integrations apply -f . -e ${_ENV_NAME} --wait=true --proj=${_PROJECT_ID} --reg=${_LOCATION} -a /workspace/sa.json 
+        integrationcli integrations apply -f . -e ${_ENV_NAME} --wait=true --proj=$PROJECT_ID --reg=${_LOCATION} -a /workspace/sa.json 
 
 options:
   logging: CLOUD_LOGGING_ONLY
