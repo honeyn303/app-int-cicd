@@ -22,7 +22,8 @@ steps:
     - -c
     - |
       gcloud secrets versions access latest --secret=${_SECRET_NAME} > sa.json 
-      cat sa.json
+      readlink -f sa.json
+
 
   - id: 'clone_and_prepare'
     name: 'gcr.io/cloud-builders/git'
@@ -40,8 +41,7 @@ steps:
         #1. Install the Integration CLI
         curl -L https://raw.githubusercontent.com/GoogleCloudPlatform/application-integration-management-toolkit/main/downloadLatest.sh | sh
         export PATH=$$PATH:$$HOME/.integrationcli/bin
-        integrationcli integrations apply -f -e ${_ENV_NAME} --wait=true --proj=${_PROJECT_ID} --reg=${_LOCATION} -a ${_SECRET_NAME} ./app-integration -e dev1 --wait=true
-
+        integrationcli integrations apply -f . -e ${_ENV_NAME} --wait=true --proj=${_PROJECT_ID} --reg=${_LOCATION} -a ${_SECRET_NAME} 
 
 options:
   logging: CLOUD_LOGGING_ONLY
