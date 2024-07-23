@@ -16,37 +16,38 @@
 # gcloud builds submit --config=deploy.yaml --project=project-name --region=us-west1
 
 steps:
-- id: 'Apply Integration scaffolding configuration'
-  name: us-docker.pkg.dev/appintegration-toolkit/images/integrationcli:latest
-  args:
-    - integrations
-    - apply
-    - -f
-    - .
-    - -u
-    - ${SHORT_SHA}
-    - --wait=${_WAIT}
-    - --reg=${_LOCATION}
-    - --proj=${PROJECT_ID}
-    - --metadata-token
-    - $(cat /tmp/cmd)
-    # uncomment these as necessary
-    #- --g=${_GRANT_PERMISSIONS}
-    #- --create-secret=${_CREATE_SECRET}
-    #- -k=locations/$LOCATION/keyRings/${_KMS_RING_NAME}/cryptoKeys/${_KMS_KEY_NAME}
-    #- --sa=${_SERVICE_ACCOUNT_NAME}
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+    - -c
+    - |
+      gcloud secrets versions access latest --secret=${_SECRET_NAME} > sa.json 
+      cat sa.json
 
-#the name of the service account  to use when setting up the connector
-substitutions:
-  _GRANT_PERMISSIONS: "true"
-  _CREATE_SECRET: "false"
-  _ENCRYPTED: "false"
-  _DEFAULT_SA: "false"
-  _SERVICE_ACCOUNT_NAME: "connectors"
-  _KMS_RING_NAME: "app-integration"
-  _KMS_KEY_NAME: "integration"
-  _WAIT: "true"
+  - id: 'clone_and_prepare'
+    name: 'gcr.io/cloud-builders/git'
+    args: ['clone', 'https://github.com/honeyn303/app-int-cicd.git']  
+
+  - id: 'deploy_integration'
+    name: 'gcr.io/cloud-builders/curl'
+    waitFor: [ 'clone_and_prepare']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        #Install unzip
+        apt-get update && apt-get install -y unzip
+        #1. Install the Integration CLI
+        curl -L https://raw.githubusercontent.com/GoogleCloudPlatform/application-integration-management-toolkit/main/downloadLatest.sh | sh
+        export PATH=$$PATH:$$HOME/.integrationcli/bin
+        integrationcli integrations apply -f -e ${_ENV_NAME} --wait=true --proj=${_PROJECT_ID} --reg=${_LOCATION} -a ${_SECRET_NAME} ./app-integration -e dev1 --wait=true
+
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  # substitution_option: ALLOW_LOOSE
+
+substitutions:
+  _SECRET_NAME: SA
+  _PROJECT_ID: honeyautomation"
+  _LOCATION: us-central1
+  _ENV_NAME: dev
